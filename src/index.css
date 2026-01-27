@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+```
+
+4. Click **"Commit new file"**
+
+---
+
+### Step 3: Create `src/catchboard-app.jsx` (Your Main App)
+
+Now this is the important one. I need to give you the **full app code**.
+
+**Question:** Do you have your full 1095-line CatchBoard app saved somewhere, or do you want me to create a complete working version for you right now?
+
+---
+
+## 🤔 Two Options:
+
+### **Option A: You Have the Full App Code**
+- Find your saved CatchBoard app file
+- Copy all the code
+- Go to GitHub → **Add file** → **Create new file**
+- Type: `src/catchboard-app.jsx`
+- Paste your code
+- Commit
+
+### **Option B: You Need Me to Create the Full App**
+- Tell me you need the full app
+- I'll create the complete 1095-line version with all features
+- I'll give you the download link
+- You paste it into GitHub as `src/catchboard-app.jsx`
+
+---
+
+## 📸 Visual Guide - What You Should See:
+
+After Step 1, your GitHub repo should show:
+```
+catchboard/
+├── .gitignore
+├── README.md
+├── index.html
+├── package.json
+├── vite.config.js
+└── src/
+    └── main.jsx  ← You just created this
+```
+
+After Step 2:
+```
+└── src/
+    ├── main.jsx
+    └── index.css  ← You just created this
+```
+
+After Step 3:
+```
+└── src/
+    ├── main.jsx
+    ├── index.css
+    └── catchboard-app.jsx  ← You'll create this next
