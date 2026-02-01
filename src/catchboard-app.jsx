@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-
+import { supabase } from './lib/supabase';
 // ============================================
 // CATCHBOARD v8 - Enhanced UX
 // ============================================
@@ -134,8 +134,12 @@ const rankStyle = (pos) => ({ width: '36px', height: '36px', borderRadius: '50%'
 export default function CatchBoard() {
   const [currentPage, setCurrentPage] = useState(...);
   const [activeTab, setActiveTab] = useState('registration');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+ const [currentUser, setCurrentUser] = useState(null);
+const [loading, setLoading] = useState(true);
+
+// derived auth state (keeps existing UI checks working)
+const isLoggedIn = !!currentUser;
+
   const [currentEvent, setCurrentEvent] = useState(null);
   const [entrantPhone, setEntrantPhone] = useState('');
   const [isEntrantLoggedIn, setIsEntrantLoggedIn] = useState(false);
@@ -208,14 +212,42 @@ export default function CatchBoard() {
   const [newCategorySpecies, setNewCategorySpecies] = useState([]);
   const [speciesSearchQuery, setSpeciesSearchQuery] = useState('');
 
-  useEffect(() => {
-    try {
-      const remembered = localStorage.getItem('catchboard_user');
-      if (remembered) { const user = JSON.parse(remembered); setCurrentUser(user); setIsLoggedIn(true); }
-      const rememberedEntrant = localStorage.getItem('catchboard_entrant');
-      if (rememberedEntrant) { setEntrantPhone(rememberedEntrant); setIsEntrantLoggedIn(true); }
-    } catch (e) {}
-  }, []);
+useEffect(() => {
+  let isMounted = true;
+
+  async function initAuth() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (!isMounted) return;
+
+    if (error) {
+      console.error('Auth session error:', error);
+    }
+
+    setCurrentUser(session?.user ?? null);
+    setLoading(false);
+  }
+
+  initAuth();
+
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    setCurrentUser(session?.user ?? null);
+  });
+
+  // keep entrant "phone login" remembering as-is
+  try {
+    const rememberedEntrant = localStorage.getItem('catchboard_entrant');
+    if (rememberedEntrant) {
+      setEntrantPhone(rememberedEntrant);
+      setIsEntrantLoggedIn(true);
+    }
+  } catch (e) {}
+
+  return () => {
+    isMounted = false;
+    subscription?.unsubscribe();
+  };
+}, []);
+
 
   const [events, setEvents] = useState([
     { id: 1, name: 'Beulah Open', description: 'Annual fishing competition at Lake Beulah featuring native and non-native categories.', date: '2026-03-22', startTime: '06:00', endTime: '14:00', timezone: 'AEST',
@@ -307,14 +339,27 @@ export default function CatchBoard() {
   };
 
   // Handlers
-  const handleLogin = () => {
-    if (!loginPhone || !loginName) { setLoginError('Please enter name and phone'); return; }
-    const user = { name: loginName, phone: loginPhone }; 
-    setIsLoggedIn(true); setCurrentUser(user);
-    try { localStorage.setItem('catchboard_user', JSON.stringify(user)); } catch (e) {}
-    setLoginPhone(''); setLoginName(''); setCurrentPage('myEvents');
-  };
-  const handleLogout = () => { setIsLoggedIn(false); setCurrentUser(null); setCurrentPage('home'); try { localStorage.removeItem('catchboard_user'); } catch (e) {} };
+  const handleLogin = async () => {
+  setLoginError('');
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin,
+    },
+  });
+
+  if (error) {
+    setLoginError('Login failed. Please try again.');
+    console.error(error);
+  }
+};
+
+  const handleLogout = async () => {
+  await supabase.auth.signOut();
+  setCurrentPage('home');
+};
+
   const handleEntrantLogin = () => { if (!entrantPhone || entrantPhone.length < 10) return; setIsEntrantLoggedIn(true); try { localStorage.setItem('catchboard_entrant', entrantPhone); } catch (e) {} setCurrentPage('myCompetitions'); };
   const handleEntrantLogout = () => { setIsEntrantLoggedIn(false); setEntrantPhone(''); try { localStorage.removeItem('catchboard_entrant'); } catch (e) {} setCurrentPage('home'); };
 
@@ -447,12 +492,23 @@ export default function CatchBoard() {
         </nav>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>{currentUser?.name}</span>
+        <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
+  {currentUser?.user_metadata?.full_name || currentUser?.email || ''}
+</span>
+
         <button onClick={handleLogout} style={{ ...styles.navButton, background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}>Logout</button>
       </div>
     </header>
   );
-
+if (loading) {
+  return (
+    <div style={styles.app}>
+      <div style={{ padding: '24px', textAlign: 'center', color: 'rgba(255,255,255,0.8)' }}>
+        Loading…
+      </div>
+    </div>
+  );
+}
   return (
     <div style={styles.app}>
       {/* Payment Modal */}
