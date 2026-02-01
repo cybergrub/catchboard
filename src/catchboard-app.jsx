@@ -1088,6 +1088,8 @@ export default function CatchBoard() {
           </div>
         </>
       )}
-    </div>
+  </div>
   );
 }
+
+export default App
