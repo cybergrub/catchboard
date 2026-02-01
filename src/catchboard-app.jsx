@@ -132,7 +132,7 @@ const leaderboardItemStyle = (rank) => ({ display: 'flex', alignItems: 'center',
 const rankStyle = (pos) => ({ width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', marginRight: '12px', background: pos === 1 ? '#f59e0b' : pos === 2 ? '#94a3b8' : pos === 3 ? '#cd7f32' : 'rgba(255,255,255,0.1)', color: pos <= 3 ? '#000' : '#fff' });
 
 export default function CatchBoard() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState(...);
   const [activeTab, setActiveTab] = useState('registration');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
