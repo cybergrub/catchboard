@@ -14,8 +14,8 @@ export default function CreateEvent() {
     city: '',
     state: 'VIC',
     date: '',
-    start_time: '',
-    end_time: '',
+    start_time: '00:00',
+    end_time: '00:00',
     recording_mode: 'entrant',
     divisions: ['Open', 'Junior'],
     max_entrants: '',
@@ -338,5 +338,8 @@ export default function CreateEvent() {
         </div>
       </form>
     </div>
+  )
+}
+
   )
 }
