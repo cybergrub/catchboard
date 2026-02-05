@@ -19,7 +19,7 @@ export default function CreateEvent() {
     recording_mode: 'entrant',
     divisions: ['Open', 'Junior'],
     max_entrants: '',
-    entry_fee_cents: 0,
+    entry_fee_dollars: '0',
     status: 'draft'
   })
 
@@ -41,14 +41,24 @@ export default function CreateEvent() {
       // Generate unique event code
       const event_code = generateEventCode()
 
-      // Prepare data
+      // Prepare data - convert dollars to cents
       const eventData = {
-        ...formData,
+        name: formData.name,
+        location_name: formData.location_name,
+        postcode: formData.postcode,
+        city: formData.city,
+        state: formData.state,
+        date: formData.date,
+        start_time: formData.start_time || null,
+        end_time: formData.end_time || null,
+        recording_mode: formData.recording_mode,
+        divisions: formData.divisions,
         event_code,
-        entry_fee_cents: parseInt(formData.entry_fee_cents) || 0,
+        entry_fee_cents: Math.round(parseFloat(formData.entry_fee_dollars || 0) * 100),
         max_entrants: formData.max_entrants ? parseInt(formData.max_entrants) : null,
-        prize_categories: [], // Will add in future session
-        organiser_id: null // Will add auth in future session
+        prize_categories: [],
+        organiser_id: null,
+        status: formData.status
       }
 
       const { data, error } = await supabase
@@ -308,20 +318,23 @@ export default function CreateEvent() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Entry Fee (cents)
+              Entry Fee ($)
             </label>
-            <input
-              type="number"
-              name="entry_fee_cents"
-              value={formData.entry_fee_cents}
-              onChange={handleChange}
-              min="0"
-              step="100"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="0"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-2 text-gray-600">$</span>
+              <input
+                type="number"
+                name="entry_fee_dollars"
+                value={formData.entry_fee_dollars}
+                onChange={handleChange}
+                min="0"
+                step="0.01"
+                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="0.00"
+              />
+            </div>
             <p className="text-xs text-gray-500 mt-1">
-              ${(formData.entry_fee_cents / 100).toFixed(2)}
+              Leave as $0 for free entry
             </p>
           </div>
         </div>
@@ -338,8 +351,5 @@ export default function CreateEvent() {
         </div>
       </form>
     </div>
-  )
-}
-
   )
 }
